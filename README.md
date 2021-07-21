@@ -1,14 +1,7 @@
-# Quickstart for Thanos
-
-![CI badge](https://github.com/dbluxo/quickstart-thanos/workflows/build-and-test/badge.svg)
-
-Get up and running with Thanos, Prometheus, Grafana, Alertmanager, cAdvisor and Node Exporter with a `docker-compose.yaml` file in less than 5 minutes.
 
 ## Running the example
 
 ```bash
-git clone https://github.com/dbluxo/quickstart-thanos
-cd quickstart-thanos
 docker-compose up -d
 ```
 
@@ -52,14 +45,4 @@ Access Key - smth
 Secret Key - Need8Chars (Keys are stored in the `docker-compose.yaml` file)
 ```
 
-## Explore metrics
 
-* Explore metrics via Grafana <http://localhost:3000/explore> or the Thanos Query Frontend <http://localhost:10901>
-
-## Notes
-
-This project is intended to be a quick-start to get up and running with Thanos. Security has not been implemented in this project.
-It is inspired by:
-
-- <https://github.com/vegasbrianc/prometheus> (forked from this project)
-- <https://github.com/alexellis/quickstart-prometheus>
