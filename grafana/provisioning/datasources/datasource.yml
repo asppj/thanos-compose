@@ -9,7 +9,7 @@ deleteDatasources:
 # list of datasources to insert/update depending
 # whats available in the database
 datasources:
-    # <string, required> name of the datasource. Required
+  # <string, required> name of the datasource. Required
   - name: Thanos
     # <string, required> datasource type. Required
     type: prometheus

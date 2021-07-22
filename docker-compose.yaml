@@ -28,6 +28,7 @@ services:
         links:
             - cadvisor:cadvisor
             - alertmanager:alertmanager
+            - statsd-exporter:statsd-exporter
         depends_on:
             - cadvisor
         restart: always
@@ -50,6 +51,7 @@ services:
         links:
             - cadvisor:cadvisor
             - alertmanager:alertmanager
+            - statsd-exporter:statsd-exporter
         depends_on:
             - cadvisor
         restart: always
@@ -72,6 +74,7 @@ services:
         links:
             - cadvisor:cadvisor
             - alertmanager:alertmanager
+            - statsd-exporter:statsd-exporter
         depends_on:
             - cadvisor
         restart: always
@@ -94,6 +97,7 @@ services:
         links:
             - cadvisor:cadvisor
             - alertmanager:alertmanager
+            - statsd-exporter:statsd-exporter
         depends_on:
             - cadvisor
         restart: always
@@ -335,3 +339,23 @@ services:
         env_file:
             - ./grafana/config.monitoring
         restart: always
+
+    statsd-exporter:
+        image: prom/statsd-exporter:v0.21.0
+        command: 
+            - '--statsd.mapping-config=/tmp/statsd_mapping.yml'
+        volumes: 
+            - ./statsd-demo/statsd_mapping.yml:/tmp/statsd_mapping.yml
+        ports: 
+            - 19102:9102
+            - 19125:9125
+            - 19125:9125/udp
+    statsd-demo:
+        image: asppj/statsd-demo:v0.0.1
+        links: 
+            - statsd-exporter:statsd-exporter
+        environment: 
+            STATSD_PREFIX: ""
+            STATSD_ADDR: "statsd-exporter:9125"
+        depends_on: 
+            - statsd-exporter
