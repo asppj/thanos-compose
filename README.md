@@ -28,6 +28,7 @@ The following services will be installed (and some are accessible via browser):
 | grafana                       | Grafana                                                                   | <http://localhost:3000/>      |
 | cadvisor                      | cAdvisor                                                                  | <http://localhost:8080/>      |
 | node-exporter                 | Node Exporter                                                             | <http://localhost:9100/>      |
+| statsd-exporter               | Statsd Exporter                                                          | <http://localhost:19102/>      |
 
 ## Credentials
 
