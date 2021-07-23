@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: grafana
-  namespace: kube-mon
+  namespace: kube-monitor
 spec:
   selector:
     matchLabels:
@@ -66,7 +66,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana
-  namespace: kube-mon
+  namespace: kube-monitor
 spec:
   type: NodePort
   ports:
