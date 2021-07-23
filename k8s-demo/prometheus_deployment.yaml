@@ -1,0 +1,58 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus # crd 类型，表示资源对象，类似于Pod、Deployment，就是用来管理部署Prometheus应用的
+metadata:
+  labels:
+    prometheus: k8s
+  name: k8s
+  namespace: monitoring
+spec:
+  alerting:
+    alertmanagers:
+      - name: alertmanager-main
+        namespace: monitoring
+        port: web
+  image: prom/prometheus:v2.28.1
+  nodeSelector:
+    kubernetes.io/os: linux
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector: {}
+  probeNamespaceSelector: {}
+  probeSelector: {}
+  replicas: 2
+  resources:
+    requests:
+      memory: 400Mi
+  ruleSelector: # 用来匹配rule规则的selector
+    matchLabels: # 匹配的是具有下面两个标签的PrometheusRule这个资源对象
+      prometheus: k8s
+      role: alert-rules
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus-k8s
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  version: v2.28.1
+  additionalScrapeConfigs:
+    key: prometheus-additional.yaml
+    name: additional-configs
+  thanos: # 添加 thanos 配置
+    image: thanosio/thanos:v0.21.1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 500Mi
+    objectStorageConfig:
+      key: thanos.yaml # 对象存储配置文件
+      name: thanos-objectstorage
+  # storage:
+  #   volumeClaimTemplate:
+  #     spec:
+  #       storageClassName: rook-ceph-block  # 指定storageclass（别用nfs做存储）
+  #       resources:
+  #         requests:
+  #           storage: 20Gi

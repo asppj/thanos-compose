@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus
+  namespace: kube-mon
+  labels:
+    app: prometheus
+spec:
+  serviceName: "prometheus"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prometheus
+      thanos-store-api: "true"
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        thanos-store-api: "true"
+    spec:
+      serviceAccountName: prometheus
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+        - name: prometheus-rules
+          configMap:
+            name: prometheus-rules
+        - name: prometheus-config-shared
+          emptyDir: {}
+        - name: object-storage-config
+          secret:
+            secretName: thanos-objectstorage
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.28.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config.file=/etc/prometheus-shared/prometheus.yaml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--storage.tsdb.retention.time=6h"
+            - "--storage.tsdb.no-lockfile"
+            - "--storage.tsdb.min-block-duration=2h" # Thanos处理数据压缩
+            - "--storage.tsdb.max-block-duration=2h"
+            - "--web.enable-admin-api" # 通过一些命令去管理数据
+            - "--web.enable-lifecycle" # 支持热更新  localhost:9090/-/reload 加载
+          ports:
+            - name: http
+              containerPort: 9090
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+          volumeMounts:
+            - name: prometheus-config-shared
+              mountPath: /etc/prometheus-shared/
+            - name: prometheus-rules
+              mountPath: /etc/prometheus/rules
+            - name: data
+              mountPath: "/prometheus"
+        - name: thanos
+          image: thanosio/thanos:v0.21.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - sidecar
+            - --log.level=debug
+            - --tsdb.path=/prometheus
+            - --prometheus.url=http://localhost:9090
+            - --reloader.config-file=/etc/prometheus/prometheus.yaml.tmpl
+            - --reloader.config-envsubst-file=/etc/prometheus-shared/prometheus.yaml
+            - --reloader.rule-dir=/etc/prometheus/rules/
+            - --objstore.config-file=/etc/secret/thanos.yaml
+          ports:
+            - name: http-sidecar
+              containerPort: 10902
+            - name: grpc
+              containerPort: 10901
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+          volumeMounts:
+            - name: prometheus-config-shared
+              mountPath: /etc/prometheus-shared/
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+            - name: prometheus-rules
+              mountPath: /etc/prometheus/rules
+            - name: data
+              mountPath: "/prometheus"
+            - name: object-storage-config
+              mountPath: /etc/secret
+              readOnly: false
+  volumeClaimTemplates: # 由于prometheus每2h生成一个TSDB数据块，所以还是需要保存本地的数据
+    - metadata:
+        name: data
+        labels:
+          app: prometheus
+      spec:
+        storageClassName: openebs-jiva-default
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
