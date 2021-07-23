@@ -1,5 +1,5 @@
 k8s-flag:
-	# 打tag 哪些节点可以运行
+	# 打tag 哪些节点可以运行 
 	kubectl tag
 show-labels:
 	kubectl get nodes --show-labels
