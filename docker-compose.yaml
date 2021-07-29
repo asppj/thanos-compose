@@ -350,12 +350,53 @@ services:
             - 19102:9102
             - 19125:9125
             - 19125:9125/udp
+
+    graphite-exporter:
+        image: prom/graphite-exporter:v0.10.1
+        ports:
+            - 9108:9108
+            - 9109:9109
+            - 9109:9109/udp
+        volumes: 
+            - ./graphitee_mapping.conf:/tmp/graphitee_mapping.conf
+        command:
+            - '--graphite.mapping-config=/tmp/graphite_mapping.conf'
+    influxdb-exporter:
+        image: prom/influxdb-exporter:v0.8.0
+        ports:
+            - 9122:9122
+        
     statsd-demo:
         image: asppj/statsd-demo:v0.0.1
         links: 
             - statsd-exporter:statsd-exporter
+            - graphiteapp:graphiteapp
         environment: 
             STATSD_PREFIX: ""
             STATSD_ADDR: "statsd-exporter:9125"
         depends_on: 
             - statsd-exporter
+
+    graphiteapp:
+        image: graphiteapp/graphite-statsd:1.1.8-1
+        ports: 
+            - 11180:80
+            - 2003-2004:2003-2004
+            - 2023-2024:2023-2024
+            - 8125:8125/udp
+            - 8126:8126        
+    telegraf:
+        image: telegraf:1.19.1
+        ports: 
+            - 8125:8125
+            - 8092:8092/udp
+            - 8094:8094/tcp
+        links: 
+            - influxdb-exporter:influxdb-exporter
+            - graphite-exporter:graphite-exporter
+            - graphiteapp:graphiteapp
+            - influxdb:influxdb
+        volume: 
+            - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+    
