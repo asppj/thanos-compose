@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: thanos-querier
-  namespace: kube-nightwatch
+  namespace: dev-nightwatch
   labels:
     app: thanos-querier
 spec:
@@ -14,6 +14,8 @@ spec:
       labels:
         app: thanos-querier
     spec:
+      nodeSelector:
+        app.nightwatch/querier: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1
@@ -50,7 +52,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: thanos-querier
-  namespace: kube-nightwatch
+  namespace: dev-nightwatch
   labels:
     app: thanos-querier
 spec:

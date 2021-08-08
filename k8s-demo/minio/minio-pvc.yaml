@@ -1,11 +1,38 @@
+
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: openebs-jiva-default
+# provisioner: kubernetes.io/aws-ebs
+# parameters:
+#   type: gp2
+# reclaimPolicy: Retain
+# allowVolumeExpansion: true
+# mountOptions:
+#   - debug
+# volumeBindingMode: Immediate
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: minio-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10G
+#   storageClassName: openebs-jiva-default
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-pvc
+  namespace: dev-nightwatch
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 10G
-  storageClassName: openebs-jiva-default
+  storageClassName: microk8s-hostpath

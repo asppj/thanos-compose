@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
+  namespace: dev-nightwatch
 spec:
   selector:
     matchLabels:
@@ -17,6 +18,8 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: minio-pvc
+      nodeSelector:
+        app.nightwatch/minio: thanos
       containers:
         - name: minio
           volumeMounts:

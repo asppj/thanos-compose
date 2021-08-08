@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: thanos-compactor
-  namespace: kube-nightwatch
+  namespace: dev-nightwatch
   labels:
     app: thanos-compactor
 spec:
@@ -16,6 +16,8 @@ spec:
       labels:
         app: thanos-compactor
     spec:
+      nodeSelector:
+        app.nightwatch/compactor: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1

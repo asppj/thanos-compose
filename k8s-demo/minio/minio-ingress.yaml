@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
+  namespace: dev-nightwatch
 spec:
   ports:
     - port: 9000
@@ -9,47 +10,48 @@ spec:
       protocol: TCP
   selector:
     app: minio
+  type: NodePort
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: redirect-https
-spec:
-  redirectScheme:
-    scheme: https
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: minio
-spec:
-  entryPoints:
-    - web
-  routes:
-    - kind: Rule
-      match: Host(`minio.qikqiak.com`)
-      services:
-        - kind: Service
-          name: minio
-          port: 9000
-      middlewares:
-        - name: redirect-https
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: minio-https
-spec:
-  entryPoints:
-    - websecure
-  routes:
-    - kind: Rule
-      match: Host(`minio.qikqiak.com`)
-      services:
-        - kind: Service
-          name: minio
-          port: 9000
-  tls:
-    certResolver: ali
-    domains:
-      - main: "*.qikqiak.com"
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: redirect-https
+# spec:
+#   redirectScheme:
+#     scheme: https
+# ---
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: minio
+# spec:
+#   entryPoints:
+#     - web
+#   routes:
+#     - kind: Rule
+#       match: Host(`minio.qikqiak.com`)
+#       services:
+#         - kind: Service
+#           name: minio
+#           port: 9000
+#       middlewares:
+#         - name: redirect-https
+# ---
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: minio-https
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#     - kind: Rule
+#       match: Host(`minio.qikqiak.com`)
+#       services:
+#         - kind: Service
+#           name: minio
+#           port: 9000
+#   tls:
+#     certResolver: ali
+#     domains:
+#       - main: "*.qikqiak.com"

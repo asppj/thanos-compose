@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: prometheus
-  namespace: kube-nightwatch
+  namespace: dev-nightwatch
   labels:
     app: prometheus
 spec:
@@ -18,6 +18,8 @@ spec:
         app: prometheus
         thanos-store-api: "true"
     spec:
+      nodeSelector:
+        app.nightwatch/sidecar: thanos
       serviceAccountName: prometheus
       volumes:
         - name: prometheus-config
@@ -108,7 +110,7 @@ spec:
         labels:
           app: prometheus
       spec:
-        storageClassName: openebs-jiva-default
+        storageClassName:  microk8s-hostpath
         accessModes:
           - ReadWriteOnce
         resources:

@@ -9,14 +9,15 @@ kubectl create -f namespace.yaml
 kubectl label no kegel-pc app.nightwatch/grafana=thanos
 kubectl label no kegel-pc app.nightwatch/sidecar=thanos
 kubectl label no kegel-pc app.nightwatch/store=thanos
-kubectl label no kegel-pc app.nightwatch/compacor=thanos
+kubectl label no kegel-pc app.nightwatch/compactor=thanos
+kubectl label no kegel-pc app.nightwatch/querier=thanos
 kubeclt label no kegel-pc app.ngithwatch=thanos
 ```
 
 ### 3. secret
 
 ```shell
-kubectl create secret generic thanos-objectstorage --from-file=thanos.yaml=store_config.yaml -n kube-nightwatch
+kubectl create secret generic thanos-objectstorage --from-file=thanos.yaml=store_config.yaml -n dev-nightwatch
 ```
 
 

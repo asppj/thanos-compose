@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: thanos-store-gateway
-  namespace: kube-nightwatch
+  namespace: dev-nightwatch
   labels:
     app: thanos-store-gateway
 spec:
@@ -17,6 +17,8 @@ spec:
         app: thanos-store-gateway
         thanos-store-api: "true"
     spec:
+      nodeSelector:
+        app.nightwatch/store: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1
