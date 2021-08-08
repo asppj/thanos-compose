@@ -18,6 +18,8 @@ spec:
         app: prometheus
         thanos-store-api: "true"
     spec:
+      nodeSelector:
+        nightwatch/sidecar: thanos
       serviceAccountName: prometheus
       volumes:
         - name: prometheus-config

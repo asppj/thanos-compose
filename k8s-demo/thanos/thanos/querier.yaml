@@ -14,6 +14,8 @@ spec:
       labels:
         app: thanos-querier
     spec:
+      nodeSelector:
+        app.nightwatch/querier: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1

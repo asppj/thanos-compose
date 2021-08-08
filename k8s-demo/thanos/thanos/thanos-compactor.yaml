@@ -16,6 +16,8 @@ spec:
       labels:
         app: thanos-compactor
     spec:
+      nodeSelector:
+        app.nightwatch/compactor: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1

@@ -1,43 +1,47 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: thanos-compactor
+  name: thanos-store-gateway
   namespace: kube-nightwatch
   labels:
-    app: thanos-compactor
+    app: thanos-store-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: thanos-compactor
-  serviceName: thanos-compactor
+      app: thanos-store-gateway
+  serviceName: thanos-store-gateway
   template:
     metadata:
       labels:
-        app: thanos-compactor
+        app: thanos-store-gateway
+        thanos-store-api: "true"
     spec:
+      nodeSelector:
+        app.nightwatch/store: thanos
       containers:
         - name: thanos
           image: thanosio/thanos:v0.21.1
           args:
-            - "compact"
+            - "store"
             - "--log.level=debug"
             - "--data-dir=/data"
             - "--objstore.config-file=/etc/secret/thanos.yaml"
-            - "--wait"
+            - "--index-cache-size=500MB"
+            - "--chunk-pool-size=500MB"
           ports:
             - name: http
               containerPort: 10902
+            - name: grpc
+              containerPort: 10901
           livenessProbe:
             httpGet:
               port: 10902
               path: /-/healthy
-            initialDelaySeconds: 10
           readinessProbe:
             httpGet:
               port: 10902
               path: /-/ready
-            initialDelaySeconds: 15
           volumeMounts:
             - name: object-storage-config
               mountPath: /etc/secret

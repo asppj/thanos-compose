@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: thanos-store-gateway
-  namespace: kube-monitor
+  namespace: kube-nightwatch
   labels:
     app: thanos-store-gateway
 spec:
