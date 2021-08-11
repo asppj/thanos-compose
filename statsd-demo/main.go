@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strconv"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -15,6 +17,8 @@ import (
 var (
 	addr   = "127.0.0.1:19125"
 	prefix = "statsd_demo_liusp"
+	goCnt  = 3000
+	G_CNT  uint64
 )
 
 func main() {
@@ -26,17 +30,19 @@ func main() {
 	if _prefix != "" {
 		prefix = _prefix
 	}
+	_goCnt := os.Getenv("STATSD_GOCNT")
+	if __goCnt, err := strconv.Atoi(_goCnt); err == nil && __goCnt > 0 {
+		goCnt = __goCnt
+	}
 	rand.Seed(time.Now().UnixNano())
 	statsd.InitStatsdClient(prefix, addr)
 	defer statsd.CloseStatsdClient()
 	// 超时
-	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// 取消
 	watch(func() {
 		cancel()
-	})
-	go NewRandRunner().LooupDo(ctx, func() {
 	})
 	// statsd
 	fns := []func(){
@@ -63,13 +69,32 @@ func main() {
 		},
 		func() {
 			statsd.ReportOutResponse(randIndex(200, 201, 301, 500, 501, 404).(int), randIndex("main", "ranking").(string))
+			statsd.ReportWithdrawTaskletAdVerifySuccessPassResponse("coin")
+			statsd.ReportH(randIndex(200, 200, 200, 200, 201, 201, 201, 200, 201, 301, 500, 501, 404).(int))
 		},
 		statsd.ReportNormalSuccessResponse,
 		statsd.ReportNormalErrorResponse,
 		statsd.ReportWithdrawTaskletSuccessPassResponse,
 	}
-	loop(ctx, fns...)
-
+	for i := 0; i < goCnt; i++ {
+		loop(ctx, fns...)
+	}
+	const secondCONST = 3
+	go func() {
+		tick := time.NewTicker(time.Second * secondCONST)
+		preCnt := uint64(0)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				cnt := G_CNT
+				cntV := (cnt - preCnt) / secondCONST
+				preCnt = cnt
+				fmt.Printf(" %d/秒   总：cnt:%d\n", cntV, G_CNT)
+			}
+		}
+	}()
 	<-ctx.Done()
 }
 
@@ -107,7 +132,7 @@ func (r *randRunner) LooupDo(ctx context.Context, fn func()) {
 		case <-tick.C:
 			r.roundSleep()
 			fn()
-			fmt.Printf("%#v\n", fn)
+			atomic.AddUint64(&G_CNT, 1)
 		}
 	}
 }

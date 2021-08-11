@@ -159,6 +159,11 @@ func ReportConfigError(name string) {
 	statsdClient.Increment(name + ".config.err")
 }
 
+// 上报接口配置错误
+func ReportH(value int) {
+	statsdClient.Histogram("histogram_demo", value)
+}
+
 func CloseStatsdClient() {
 	statsdClient.Close()
 }
