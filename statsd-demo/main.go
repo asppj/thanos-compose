@@ -11,7 +11,12 @@ import (
 	"syscall"
 	"time"
 
+	"net/http"
+
+	"github.com/asppj/thanos-compose/statsd-demo/metrics"
 	statsd "github.com/asppj/thanos-compose/statsd-demo/statsd"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -20,6 +25,11 @@ var (
 	goCnt  = 3000
 	G_CNT  uint64
 )
+
+func metricsRun() {
+	http.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(":5000", nil)
+}
 
 func main() {
 	_addr := os.Getenv("STATSD_ADDR")
@@ -30,6 +40,7 @@ func main() {
 	if _prefix != "" {
 		prefix = _prefix
 	}
+	metrics.Init(prefix)
 	_goCnt := os.Getenv("STATSD_GOCNT")
 	if __goCnt, err := strconv.Atoi(_goCnt); err == nil && __goCnt > 0 {
 		goCnt = __goCnt
@@ -71,6 +82,10 @@ func main() {
 			statsd.ReportOutResponse(randIndex(200, 201, 301, 500, 501, 404).(int), randIndex("main", "ranking").(string))
 			statsd.ReportWithdrawTaskletAdVerifySuccessPassResponse("coin")
 			statsd.ReportH(randIndex(200, 200, 200, 200, 201, 201, 201, 200, 201, 301, 500, 501, 404).(int))
+			status := randIndex("200", "200", "200", "200", "201", "201", "201", "200", "201", "301", "500", "501", "404").(string)
+			endpoint := randIndex("/home", "/index", "/", "/config", "/config", "/config").(string)
+			method := randIndex("GET", "GET", "GET", "POST", "POST", "PUT").(string)
+			metrics.RoundMetrics(status, endpoint, method)
 		},
 		statsd.ReportNormalSuccessResponse,
 		statsd.ReportNormalErrorResponse,
@@ -95,6 +110,8 @@ func main() {
 			}
 		}
 	}()
+	// prometheus metrics
+	go metricsRun()
 	<-ctx.Done()
 }
 
